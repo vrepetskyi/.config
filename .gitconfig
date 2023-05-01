@@ -2,6 +2,7 @@
   	editor = code --wait
 	longpaths = true
 	autocrlf = false
+    pager = delta
 [user]
 	name = Vadym Repetskyi
 	email = vadym.repetskyi@gmail.com
@@ -13,9 +14,15 @@
   	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
   	tool = vscode
+    conflictstyle = diff3
 [mergetool "vscode"]
   	cmd = code --wait $MERGED
 [push]
 	autoSetupRemote = true
 [init]
 	defaultBranch = main
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true
+    colorMoved = default
