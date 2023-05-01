@@ -1,4 +1,6 @@
 format = 'from [bash](bold yellow) at $all'
+[cmd_duration]
+disabled = true
 
 [aws]
 symbol = "  "
