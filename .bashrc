@@ -71,7 +71,17 @@ escape_space() {
     echo "$(sed 's! !\\ !g' $1)"
 }
 
-export MAKEFLAGS="-j $(nproc)"
+function p() {
+  if [ $# -gt 0 ]
+  then
+    pwsh.exe -nop -c "$@"
+  else
+    pwsh.exe -nol -NoProfileLoadTime
+  fi
+}
+
+export WIN_HOME=$(wslpath $(p 'cd ~ && (pwd).Path') | cut -d $'\r' -f 1)
+alias wh="cd $WIN_HOME"
 
 export VSCODE="$(which code | escape_space)"
 
@@ -84,5 +94,12 @@ alias r=ranger
 shopt -s autocd
 . /usr/share/autojump/autojump.sh
 
+bind 'TAB:menu-complete'
+bind '"\e[Z":menu-complete-backward'
+
 export STARSHIP_CONFIG="$SCRIPT_DIR/starship.toml"
 eval "$(starship init bash)"
+
+alias s='source ~/.bashrc'
+
+export MAKEFLAGS="-j $(nproc)"
