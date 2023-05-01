@@ -7,4 +7,4 @@ Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 
 Invoke-Expression (&starship init powershell)
 
-$ENV:STARSHIP_CONFIG = "$($pwd)\starship.toml"
+$ENV:STARSHIP_CONFIG = "$($PSScriptRoot)\starship.toml"

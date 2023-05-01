@@ -1,1 +1,2 @@
 format = 'from [pwsh](bold yellow) at $all'
+right_format = '$username'

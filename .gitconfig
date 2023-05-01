@@ -5,7 +5,7 @@
 [user]
 	name = Vadym Repetskyi
 	email = vadym.repetskyi@gmail.com
-[includeIf "gitdir/i:D:/repos/lambda"]
+[includeIf "gitdir/i:D:/repos/lambda/"]
 	path = .gitconfig-lambda
 [diff]
   	tool = vscode
