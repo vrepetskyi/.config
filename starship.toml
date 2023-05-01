@@ -1,5 +1,8 @@
 format = 'from [pwsh](bold yellow) at $all'
-right_format = '$username'
+[username]
+disabled = true
+[cmd_duration]
+disabled = true
 
 [aws]
 symbol = "  "
