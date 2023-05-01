@@ -1,5 +1,3 @@
-#!/bin/bash
-
 case $- in
     *i*) ;;
       *) return;;
