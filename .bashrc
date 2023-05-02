@@ -35,9 +35,6 @@ escape_space() {
   echo "$(sed 's! !\\ !g' $1)"
 }
 
-alias ls='exa'
-alias la='exa -a'
-
 function p() {
   if [ $# -gt 0 ]; then
     pwsh.exe -nop -c "$@"
@@ -46,33 +43,33 @@ function p() {
   fi
 }
 
-export WIN_HOME=$(wslpath $(p 'cd ~ && (pwd).Path') | cut -d $'\r' -f 1)
-alias wh="cd $WIN_HOME"
+alias ls='exa'
+alias la='exa -a'
+
+eval "$(zoxide init bash)"
+alias r=ranger
+alias e='explorer.exe .'
+
+function pshd() {
+  if [ $# -eq 0 ]; then
+    pushd . > /dev/null
+  else
+    pushd $1 > /dev/null
+    cd -
+  fi
+}
+alias popd='popd > /dev/null'
+alias appd='popd && pshd'
+
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
 
 export VSCODE="$(which code | escape_space)"
 export EDITOR=nvim
 alias vim=$EDITOR
 alias vi=vim
 alias v=vi
-
-shopt -s autocd
-. /usr/share/autojump/autojump.sh
-alias r=ranger
-alias e='explorer.exe .'
-function jo() {
-  j $1
-  if [[ $1 != -* ]]; then
-    e
-    cd - > /dev/null
-  fi
-}
-function jco() {
-  jc $1
-  if [[ $1 != -* ]]; then
-    e
-    cd - > /dev/null
-  fi
-}
 
 alias s='source ~/.bashrc'
 
@@ -83,6 +80,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+export WIN_HOME=$(wslpath $(p 'cd ~ && (pwd).Path') | cut -d $'\r' -f 1)
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 export MAKEFLAGS="-j $(nproc)"
 export PATH=$PATH:/home/vrepetskyi/.cargo/bin
