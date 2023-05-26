@@ -53,45 +53,77 @@ source /etc/profile.d/bash_completion.sh
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 source ~/source/fzf-tab-completion/bash/fzf-bash-completion.sh
-_fzf_bash_completion_loading_msg() { echo "${PS1@P}${READLINE_LINE}" | tail -n1; }
 bind -x '"\t": fzf_bash_completion'
 
 # Navigation
-export WIN_HOME=$(wslpath $(p 'cd ~ && (pwd).Path') | choose -f $'\r' 0)
-
-eval "$(zoxide init bash)"
+export WIN_HOME=$(wslpath $(p '$env:USERPROFILE') | sd '\r' '')
 
 alias ..='cd ../'
 alias ...='cd ../../'
 alias ....='cd ../../../'
 
 function g() {
-    # Zoxide by default
-    if [[ $# != 1 ]]; then
-        z $@
-    elif [[ ${1::1} == '^' ]]; then
-        # Matching Windows directory
-        if [[ $PWD/ = /home/$USER/* ]]; then
-            cd $(echo $PWD | sd "^\/home\/$USER" '/mnt/d')
-        elif [[ $PWD/ = /mnt/d/* ]]; then
-            cd $(echo $PWD | sd '^\/mnt\/d' "/home/$USER")
+    TARGET='\0'
+
+    if [[ $# == 1 ]]; then
+        if [[ $1 == '^' ]]; then
+            if [[ $PWD/ = /home/$USER/* ]]; then
+                # Go to a matching Windows directory
+                TARGET=$(echo $PWD | sd "^\/home\/$USER" $WIN_HOME)
+            elif [[ $PWD/ = $WIN_HOME/* ]]; then
+                # Go to a matching Linux directory
+                ESCAPED_WIN_HOME=$(echo $WIN_HOME | sd '/' '\/')
+                TARGET=$(echo $PWD | sd "^$ESCAPED_WIN_HOME" "/home/$USER")
+            fi
+        elif [[ $1 =~ ^-(-|[0-9]|\/.+)?$ ]]; then
+            # Use a history record
+            TARGET=$(cdhist -am 20 $@)
+        else
+            # Check for a direct match
+            if [[ -d $1 ]]; then
+                TARGET=$1
+            elif [[ -d $PWD/$1 ]]; then
+                TARGET=$PWD/$1
+            fi
         fi
-    elif [[ $# == 1 && $1 =~ ^-(-|[0-9]|\/.+)?$ ]]; then
-        # Directory history
-        TARGET=$(cdhist -am 10 $@)
-        if [[ $TARGET ]]; then
+    fi
+
+    if [[ $TARGET == '\0' ]]; then
+        # Otherwise use zoxide completion to resolve the query;
+        # select from multiple results by using fzf
+        TARGET=$(zoxide query -l $@ | fzf -0 -1)
+    fi
+
+    if [[ $TARGET ]]; then
+        if [[ -d $TARGET ]]; then
+            # Proceed to the target directory
+            # and write it to the history
+            cdhist $TARGET > /dev/null
             cd $TARGET
+        else
+            # No matching Windows/Linux directory
+            echo "Matching directory doesn't exist" >&2
+            return 1
         fi
     else
-        cd $@
+        # Zoxide didn't find anything
+        echo "Failed to find a match" >&2
+        return 1
     fi
 }
-alias gi=zi
 
 _g_completions() {
     if [[ ${COMP_WORDS[1]::1} == '-' ]]; then 
-        COMPREPLY=($(cat ~/.cd_history))
+        # History suggestions
+        cdhist -am 20
+        HIST=$(cat ~/.cd_history)
+        if [[ ${COMP_WORDS[1]:1} =~ ^\/.+ ]]; then
+            # Filtering
+            HIST=$(echo $HIST | sd ' ' '\n' | rg ${COMP_WORDS[1]:2})
+        fi
+        COMPREPLY=($HIST)
     else
+        # Direct match and zoxide suggestions
         COMPREPLY=($(compgen -d ${COMP_WORDS[1]}))
         COMPREPLY+=($(zoxide query -l ${COMP_WORDS[1]}))
     fi
@@ -121,7 +153,7 @@ paste_from_clipboard () {
   local head=${READLINE_LINE:0:READLINE_POINT+shift}
   local tail=${READLINE_LINE:READLINE_POINT+shift}
 
-  local paste=$(paste | tr '\r\n' '\n')
+  local paste=$(paste | sd '\r\n' '\n')
   local paste_len=${#paste}
 
   READLINE_LINE=${head}${paste}${tail}
