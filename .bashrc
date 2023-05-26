@@ -44,7 +44,7 @@ HISTCONTROL=ignoreboth
 HISTSIZE=99999
 HISTFILESIZE=99999
 
-export PROMPT_COMMAND='history -a;history -r'
+export PROMPT_COMMAND='history -a; history -r'
 
 # Completion
 source /etc/profile.d/bash_completion.sh
@@ -79,7 +79,7 @@ function g() {
             # Use a history record
             TARGET=$(cdhist -am 20 $@)
         else
-            # Check for a direct match
+            # Check for an exact match
             if [[ -d $1 ]]; then
                 TARGET=$1
             elif [[ -d $PWD/$1 ]]; then
@@ -89,8 +89,8 @@ function g() {
     fi
 
     if [[ $TARGET == '\0' ]]; then
-        # Otherwise use zoxide completion to resolve the query;
-        # select from multiple results by using fzf
+        # Otherwise use Zoxide completion to resolve the query;
+        # select from multiple results using fzf
         TARGET=$(zoxide query -l $@ | fzf -0 -1)
     fi
 
@@ -113,8 +113,12 @@ function g() {
 }
 
 _g_completions() {
+    if [[ ${#COMP_WORDS[@]} > 2 ]]; then
+        # Suggest only for a single argument
+        return
+    fi
     if [[ ${COMP_WORDS[1]::1} == '-' ]]; then 
-        # History suggestions
+        # History entries
         cdhist -am 20
         HIST=$(cat ~/.cd_history)
         if [[ ${COMP_WORDS[1]:1} =~ ^\/.+ ]]; then
@@ -123,7 +127,7 @@ _g_completions() {
         fi
         COMPREPLY=($HIST)
     else
-        # Direct match and zoxide suggestions
+        # Subdirectories and Zoxide suggestions
         COMPREPLY=($(compgen -d ${COMP_WORDS[1]}))
         COMPREPLY+=($(zoxide query -l ${COMP_WORDS[1]}))
     fi
