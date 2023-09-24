@@ -66,6 +66,10 @@ _shorten_home() {
     echo "$1" | sd "^$HOME" '~'
 }
 
+_expand_home() {
+    echo "$1" | sd '^~' "$HOME"
+}
+
 _g_rel() {
     # Expand dots to a relative path
     # g ... -> g ../../
@@ -136,18 +140,21 @@ g() {
     fi
 
     if [[ ! "$target" ]]; then
-        # Select from multiple results using fzf
-        target="$(_g_zoxide "$@" | fzf -0 -1)"
+        target="$(_g_zoxide "$@")"
     fi
 
-    if [[ "$target" ]]; then
+    # Select from multiple results using fzf
+    target="$(_shorten_home "$target" | fzf -0 -1)"
+    path="$(_expand_home "$target")"
+
+    if [[ -d "$path" ]]; then
         # Proceed to the target directory,
         # append it to the history,
         # and print its contents
-        cd "$target" || exit
+        cd "$path" || exit || exit
         zoxide add .
-        echo
-        _shorten_home "$(cdhist .)"
+        cdhist . &>/dev/null
+        printf "\n%s\n" "$target"
         ls
     else
         echo "No directory selected" >&2
@@ -251,3 +258,7 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 # Prompt
 export STARSHIP_CONFIG="$SCRIPT_DIR/starship.toml"
 eval "$(starship init bash)"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH=$BUN_INSTALL/bin:$PATH

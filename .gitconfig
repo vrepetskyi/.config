@@ -6,8 +6,6 @@
 [user]
 	name = Vadym Repetskyi
 	email = vadym.repetskyi@gmail.com
-[includeIf "gitdir/i:~/work"]
-	path = .gitconfig-lambda
 [diff]
   	tool = vscode
 [difftool "vscode"]
