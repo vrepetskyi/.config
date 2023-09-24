@@ -1,8 +1,13 @@
 format = 'from [pwsh](bold yellow) at $all'
+
 [username]
 disabled = true
+
 [cmd_duration]
 disabled = true
+
+[character]
+error_symbol = '[❯](bold red)'
 
 [aws]
 symbol = "  "
