@@ -12,5 +12,4 @@ SCRIPT_DIR="$(cd -P "$(dirname -- "${SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
 ln -nsf "$SCRIPT_DIR"/.inputrc ~/.inputrc
 ln -nsf "$SCRIPT_DIR"/.bashrc ~/.bashrc
 
-ln -nsf "$SCRIPT_DIR"/.gitconfig-lambda ~/.gitconfig-lambda
 ln -nsf "$SCRIPT_DIR"/.gitconfig ~/.gitconfig
